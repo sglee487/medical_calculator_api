@@ -38,6 +38,7 @@ DEBUG = env('DEBUG')
 ALLOWED_HOSTS = [
     env('WEB_SITE'),
     env('API_SITE'),
+    env('API_IP'),
     'localhost',
     '127.0.0.1',
     'web.localhost'

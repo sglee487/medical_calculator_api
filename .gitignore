@@ -1,3 +1,6 @@
+static
+project_uwsgi.ini
+
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,visualstudiocode,django,pycharm,venv
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,macos,visualstudiocode,django,pycharm,venv
 
