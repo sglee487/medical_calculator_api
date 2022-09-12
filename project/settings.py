@@ -44,6 +44,8 @@ ALLOWED_HOSTS = [
     'web.localhost'
 ]
 
+CSRF_TRUSTED_ORIGINS = [env('API_SITE')]
+
 
 # Application definition
 

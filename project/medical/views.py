@@ -2,15 +2,26 @@ import random
 import string
 import uuid
 import datetime
+import json
+import base64
+from urllib.parse import urlencode
+
+import jwt
+import requests
+from datetime import timedelta
+from django.conf import settings
+from django.utils import timezone
+from social_core.backends.oauth import BaseOAuth2
+from social_core.utils import handle_http_errors
 
 from django import views
 from django.db.models import QuerySet
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password, check_password
 from django.core.mail import send_mail
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
+from django.shortcuts import redirect
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -24,6 +35,7 @@ from project import settings
 from project.medical.models import Action, AuditLog, UserInfo
 from project.medical.serializers import UserSerializer, EpinephrineRateSwerializer
 
+HttpResponseRedirect.allowed_schemes.append('intent')
 
 class UserViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
@@ -223,10 +235,38 @@ class CustomAuthToken(ObtainAuthToken):
             'token': token.key
         }, status=status.HTTP_200_OK)
 
+@csrf_exempt
 def auth_callback(request: HttpRequest, auth_type:str) -> HttpResponse:
-    print(auth_type)
+    if auth_type == 'google':
+        return HttpResponse(status=status.HTTP_200_OK)
 
-    return HttpResponse(status=status.HTTP_200_OK)
+    if 'apple' in auth_type:
+        if request.method != 'POST':
+            return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        if 'id_token' not in request.POST:
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        # Get user info from Apple
+        payload = request.POST['id_token'].split('.')[1]
+        payload = base64.b64decode(payload + '==')
+        payload = json.loads(payload)
+
+        if auth_type == 'appleandroid':
+            data = request.POST.copy()
+            data['user'] = json.dumps({
+                'email': payload['email']
+            })
+
+            to = f'intent://callback?{urlencode(data)}#Intent;package={"com.sglee487.medical_calculator"};scheme=signinwithapple;end'
+            return redirect(to)
+
+        return JsonResponse({
+            'id': payload['sub'],
+            'email': payload['email']
+        })
+
+    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
 
