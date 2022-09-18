@@ -64,7 +64,7 @@ class UserViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
 
         log = AuditLog()
-        log.user_email = request.data['name']
+        log.user_email = request.data['username']
         log.action_type = Action.POST
         log.action_detail = 'register as a user (email)'
         log.save()
@@ -203,7 +203,7 @@ class CustomAuthToken(ObtainAuthToken):
             user_info.save()
             
             log = AuditLog()
-            log.user_email = request.data['name']
+            log.user_email = request.data['username']
             log.action_type = Action.POST
             log.action_detail = f'register as a user ({request.data["type"]})'
             log.save()
