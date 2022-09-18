@@ -64,7 +64,7 @@ class UserViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
 
         log = AuditLog()
-        log.user_email = request.data['email']
+        log.user_email = request.data['name']
         log.action_type = Action.POST
         log.action_detail = 'register as a user (email)'
         log.save()
@@ -107,7 +107,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
             log = AuditLog()
-            log.user_email = user.email
+            log.user_email = user.username
             log.action_type = Action.PATCH
             log.action_detail = 'change password'
             log.save()
@@ -130,7 +130,7 @@ class UserViewSet(viewsets.ModelViewSet):
                                 status=status.HTTP_400_BAD_REQUEST)
 
             log = AuditLog()
-            log.user_email = user.email
+            log.user_email = user.username
             log.action_type = Action.PATCH
             log.action_detail = f'change is_active to {is_active}'
             log.save()
@@ -162,7 +162,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user.save()
 
         log = AuditLog()
-        log.user_email = user.email
+        log.user_email = user.username
         log.action_type = Action.DELETE
         log.action_detail = 'delete account'
         log.save()
@@ -180,8 +180,9 @@ class CustomAuthToken(ObtainAuthToken):
             if 'social_account_id' in request.data:
                 user = UserInfo.objects.get(
                     social_account_id=request.data['social_account_id']).user
-                
-            user = User.objects.get(username=request.data['username'])
+                print(user)
+            else:
+                user = User.objects.get(username=request.data['username'])
         except:
             if request.data['type'] == 'email':
                 return Response({'error': 'message.wrongEmailOrPassword'}, status=status.HTTP_404_NOT_FOUND)
@@ -202,7 +203,7 @@ class CustomAuthToken(ObtainAuthToken):
             user_info.save()
             
             log = AuditLog()
-            log.user_email = request.data['email']
+            log.user_email = request.data['name']
             log.action_type = Action.POST
             log.action_detail = f'register as a user ({request.data["type"]})'
             log.save()
@@ -223,7 +224,7 @@ class CustomAuthToken(ObtainAuthToken):
         user.save()
 
         log = AuditLog()
-        log.user_email = user.email
+        log.user_email = user.username
         log.action_type = Action.POST
         log.action_detail = 'login'
         log.save()
@@ -312,7 +313,7 @@ def reset_password(request: HttpRequest) -> HttpResponse:
     )
     
     log = AuditLog()
-    log.user_email = user.email
+    log.user_email = user.username
     log.action_type = Action.POST
     log.action_detail = 'reset password sent'
     log.save()
